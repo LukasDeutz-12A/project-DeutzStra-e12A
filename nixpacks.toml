@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_18"]
+
+[phases.install]
+cmds = ["cd backend && npm install --omit=dev"]
+
+[phases.build]
+cmds = ["echo 'Skipping build...'"]
+
+[start]
+cmd = "cd backend && node server.js"
+
+[providers]
+includes = ["nodejs"]
